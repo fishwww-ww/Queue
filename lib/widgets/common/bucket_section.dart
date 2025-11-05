@@ -19,6 +19,7 @@ class BucketSection<T> extends StatefulWidget {
     required this.getCompleted,
     required this.setCompleted,
     this.initiallyExpanded = true,
+    this.priorityColor,
   });
 
   final String title;
@@ -27,6 +28,7 @@ class BucketSection<T> extends StatefulWidget {
   final T Function(String title, DateTime? dueAt) createNewItem;
   final Future<void> Function(List<T> next) onItemsChanged;
   final bool initiallyExpanded;
+  final Color? priorityColor;
 
   final String Function(T item) getId;
   final String Function(T item) getTitle;
@@ -80,6 +82,26 @@ class _BucketSectionState<T> extends State<BucketSection<T>> with SingleTickerPr
     });
   }
 
+  Color _getPriorityColor(BuildContext context) {
+    if (widget.priorityColor != null) {
+      return widget.priorityColor!;
+    }
+    // 默认使用主题色
+    return Theme.of(context).colorScheme.primary;
+  }
+
+  Color _getLightVariant(Color color) {
+    // 生成颜色的浅色变体，用于背景
+    final hslColor = HSLColor.fromColor(color);
+    return hslColor.withLightness(0.98).withSaturation(0.3).toColor();
+  }
+
+  Color _getBorderVariant(Color color) {
+    // 生成边框颜色
+    final hslColor = HSLColor.fromColor(color);
+    return hslColor.withLightness(0.85).withSaturation(0.4).toColor();
+  }
+
   @override
   Widget build(BuildContext context) {
     final sectionItems = widget.allItems.where(widget.isInBucket).toList();
@@ -88,13 +110,27 @@ class _BucketSectionState<T> extends State<BucketSection<T>> with SingleTickerPr
         if (widget.isInBucket(widget.allItems[i])) i
     ];
 
+    final priorityColor = _getPriorityColor(context);
+    final backgroundColor = _getLightVariant(priorityColor);
+    final borderColor = _getBorderVariant(priorityColor);
+
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 12),
-      padding: const EdgeInsets.only(bottom: 8),
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(color: Theme.of(context).dividerColor),
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: borderColor,
+          width: 1,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: borderColor.withValues(alpha: 0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -109,7 +145,11 @@ class _BucketSectionState<T> extends State<BucketSection<T>> with SingleTickerPr
                       icon: AnimatedRotation(
                         turns: _isExpanded ? 0.5 : 0.0,
                         duration: const Duration(milliseconds: 300),
-                        child: const Icon(Icons.expand_more, size: 20),
+                        child: Icon(
+                          Icons.expand_more,
+                          size: 20,
+                          color: priorityColor,
+                        ),
                       ),
                       onPressed: _toggleExpanded,
                     ),
@@ -117,7 +157,10 @@ class _BucketSectionState<T> extends State<BucketSection<T>> with SingleTickerPr
                     Expanded(
                       child: Text(
                         widget.title,
-                        style: Theme.of(context).textTheme.titleMedium,
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          color: priorityColor,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ],
@@ -125,7 +168,10 @@ class _BucketSectionState<T> extends State<BucketSection<T>> with SingleTickerPr
               ),
               IconButton(
                 tooltip: '添加',
-                icon: const Icon(Icons.add_circle_outline),
+                icon: Icon(
+                  Icons.add_circle_outline,
+                  color: priorityColor,
+                ),
                 onPressed: () async {
                   final result = await showModalBottomSheet<TodoEditResult>(
                     context: context,
@@ -201,6 +247,7 @@ class _BucketSectionState<T> extends State<BucketSection<T>> with SingleTickerPr
                         title: widget.getTitle(item),
                         dueAt: widget.getDueAt(item),
                         completed: widget.getCompleted(item),
+                        priorityColor: priorityColor,
                         onChanged: (v) async {
                           widget.setCompleted(item, v ?? false);
                           await widget.onItemsChanged(List<T>.from(widget.allItems));

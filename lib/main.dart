@@ -14,8 +14,25 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Queue',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: const ColorScheme.light(
+          primary: Colors.black,
+          onPrimary: Colors.white,
+          surface: Colors.white,
+          onSurface: Colors.black,
+          onSurfaceVariant: Colors.black,
+          secondary: Colors.black,
+          onSecondary: Colors.white,
+          error: Colors.red,
+          onError: Colors.white,
+        ),
       ),
+      darkTheme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.white,
+          brightness: Brightness.dark,
+        ),
+      ),
+      themeMode: ThemeMode.system,
       home: const MainNavigationPage(),
       debugShowCheckedModeBanner: false,
     );
@@ -113,13 +130,13 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
           unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500),
           items: const [
             BottomNavigationBarItem(
-              icon: Icon(Icons.folder, size: 24),
-              activeIcon: Icon(Icons.folder, size: 24),
+              icon: Icon(Icons.check_circle, size: 24),
+              activeIcon: Icon(Icons.check_circle, size: 24),
               label: 'Case',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.check_circle, size: 24),
-              activeIcon: Icon(Icons.check_circle, size: 24),
+              icon: Icon(Icons.folder, size: 24),
+              activeIcon: Icon(Icons.folder, size: 24),
               label: 'Todo',
             ),
           ],

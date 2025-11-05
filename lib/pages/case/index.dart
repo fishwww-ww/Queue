@@ -5,6 +5,18 @@ import 'package:queue/utils/dates.dart';
 import 'package:queue/widgets/common/delete_completed_action.dart';
 import 'package:queue/widgets/common/bucket_section.dart';
 
+// 优先级配色方案
+class PriorityColors {
+  // 执行 - 温暖的红色，表示紧急但不刺眼
+  static const Color execute = Color(0xFFE57373); // 浅红色
+
+  // 暂缓 - 温暖的黄色，表示中等优先级
+  static const Color defer = Color(0xFFFFB74D); // 浅橙色
+
+  // 搁置 - 清新的绿色，表示低优先级
+  static const Color hold = Color(0xFF81C784); // 浅绿色
+}
+
 class CasePage extends StatefulWidget {
   const CasePage({super.key});
 
@@ -77,6 +89,7 @@ class _CasePageState extends State<CasePage> {
         children: [
           BucketSection<_CaseItem>(
             title: '执行',
+            priorityColor: PriorityColors.execute,
             allItems: _items,
             isInBucket: (it) => (it.bucket ?? _CaseBucket.execute) == _CaseBucket.execute,
             createNewItem: (title, dueAt) => _CaseItem(
@@ -100,6 +113,7 @@ class _CasePageState extends State<CasePage> {
           const SizedBox(height: 8),
           BucketSection<_CaseItem>(
             title: '暂缓',
+            priorityColor: PriorityColors.defer,
             allItems: _items,
             isInBucket: (it) => (it.bucket ?? _CaseBucket.execute) == _CaseBucket.defer,
             createNewItem: (title, dueAt) => _CaseItem(
@@ -123,6 +137,7 @@ class _CasePageState extends State<CasePage> {
           const SizedBox(height: 8),
           BucketSection<_CaseItem>(
             title: '搁置',
+            priorityColor: PriorityColors.hold,
             allItems: _items,
             isInBucket: (it) => (it.bucket ?? _CaseBucket.execute) == _CaseBucket.hold,
             createNewItem: (title, dueAt) => _CaseItem(
