@@ -4,8 +4,6 @@ import 'package:queue/utils/storage.dart';
 import 'package:queue/utils/dates.dart';
 import 'package:queue/widgets/common/delete_completed_action.dart';
 import 'package:queue/widgets/common/bucket_section.dart';
-import 'package:queue/widgets/todoThing/index.dart';
-import 'package:queue/widgets/todoModal/index.dart';
 
 class TodoPage extends StatefulWidget {
   const TodoPage({super.key});
@@ -49,18 +47,14 @@ class _TodoPageState extends State<TodoPage> {
 
   Future<void> _saveItems() async {
     try {
-      final file = await _getStorageFile();
+      await _getStorageFile();
       await saveJsonList('todos.json', _items.map((e) => e.toJson()).toList());
     } catch (_) {
       // 忽略写入错误
     }
   }
 
-  void _onTabSelected(BuildContext context, int index) {
-    if (index == 1) return; // already on /todo
-    Navigator.pushReplacementNamed(context, '/case');
-  }
-
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -151,15 +145,7 @@ class _TodoPageState extends State<TodoPage> {
           ),
         ],
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 1,
-        onTap: (i) => _onTabSelected(context, i),
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.folder), label: 'Case'),
-          BottomNavigationBarItem(icon: Icon(Icons.check_circle), label: 'Todo'),
-        ],
-      ),
-    );
+          );
   }
 
   // 公共 BucketSection 已替换原实现
