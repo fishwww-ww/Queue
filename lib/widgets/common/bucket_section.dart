@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:queue/widgets/todoThing/index.dart';
 import 'package:queue/widgets/todoModal/index.dart';
 
@@ -85,16 +86,39 @@ class BucketSection<T> extends StatelessWidget {
           ReorderableListView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
+            // 自定义拖拽预览样式，确保显示圆角
+            proxyDecorator: (child, index, animation) {
+              return Material(
+                elevation: 6,
+                borderRadius: BorderRadius.circular(12),
+                shadowColor: Colors.black.withOpacity(0.3),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: child,
+                ),
+              );
+            },
             onReorder: (oldIndex, newIndex) async {
-              if (newIndex > oldIndex) newIndex -= 1;
-              final List<int> newOrder = List<int>.from(sectionIndices);
-              final moved = newOrder.removeAt(oldIndex);
-              newOrder.insert(newIndex, moved);
-
-              final List<T> next = List<T>.from(allItems);
-              for (int k = 0; k < newOrder.length; k++) {
-                next[newOrder[k]] = allItems[sectionIndices[k]];
+              // 调整 newIndex：当向下拖拽时，需要减1
+              if (newIndex > oldIndex) {
+                newIndex -= 1;
               }
+              
+              // 重新排列当前分组内的项目
+              final List<T> reorderedSectionItems = List<T>.from(sectionItems);
+              final T movedItem = reorderedSectionItems.removeAt(oldIndex);
+              reorderedSectionItems.insert(newIndex, movedItem);
+              
+              // 构建新的 allItems 列表，保持原有顺序但更新当前分组的顺序
+              final List<T> next = List<T>.from(allItems);
+              
+              // 将重新排序后的分组项替换到 allItems 中对应的位置
+              // sectionIndices 包含了 allItems 中属于当前分组的所有索引
+              // 按照 sectionIndices 的顺序，用重新排序后的项替换
+              for (int i = 0; i < sectionIndices.length && i < reorderedSectionItems.length; i++) {
+                next[sectionIndices[i]] = reorderedSectionItems[i];
+              }
+              
               await onItemsChanged(next);
             },
             itemCount: sectionItems.length,
@@ -102,7 +126,7 @@ class BucketSection<T> extends StatelessWidget {
               final item = sectionItems[localIndex];
               return Container(
                 key: ValueKey(getId(item)),
-                margin: const EdgeInsets.only(bottom: 6),
+                // margin: const EdgeInsets.symmetric(vertical: 8),
                 child: TodoThingCard(
                   title: getTitle(item),
                   dueAt: getDueAt(item),
@@ -118,7 +142,15 @@ class BucketSection<T> extends StatelessWidget {
                   },
                   dragHandle: ReorderableDragStartListener(
                     index: localIndex,
-                    child: Icon(Icons.drag_handle, color: Theme.of(context).hintColor),
+                    child: SvgPicture.asset(
+                      'lib/assets/drag.svg',
+                      width: 24,
+                      height: 24,
+                      colorFilter: ColorFilter.mode(
+                        Theme.of(context).hintColor,
+                        BlendMode.srcIn,
+                      ),
+                    ),
                   ),
                 ),
               );

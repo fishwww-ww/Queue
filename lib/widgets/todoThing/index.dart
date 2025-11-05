@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:queue/widgets/todoModal/index.dart';
 
 class TodoThingCard extends StatelessWidget {
@@ -32,23 +33,36 @@ class TodoThingCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    return Card(
-      elevation: 0,
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Theme.of(context).dividerColor),
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        child: Row(
+    return ClipRRect(
+      // 关键：裁剪容器的矩形边界，让布局和视觉一致
+      // 这样拖拽时移动的就是圆角形状，而非矩形
+      borderRadius: BorderRadius.circular(12),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        // spacing: const Gap(8),
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Theme.of(context).dividerColor),
+            ),
+            margin: const EdgeInsets.symmetric(vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             // 拖拽手柄（可由上层传入可拖拽句柄）
             Padding(
               padding: const EdgeInsets.only(right: 8),
-              child: dragHandle ?? Icon(Icons.drag_handle, color: Theme.of(context).hintColor),
+              child: dragHandle ?? SvgPicture.asset(
+                'lib/assets/drag.svg',
+                width: 24,
+                height: 24,
+                colorFilter: ColorFilter.mode(
+                  Theme.of(context).hintColor,
+                  BlendMode.srcIn,
+                ),
+              ),
             ),
             // 勾选框
             Checkbox(
@@ -106,6 +120,8 @@ class TodoThingCard extends StatelessWidget {
             ),
           ],
         ),
+          ),
+        ],
       ),
     );
   }
